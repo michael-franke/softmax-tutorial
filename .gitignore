@@ -1,0 +1,12 @@
+/.projectile
+/.auctex-auto/
+/*.gz
+/*.xml
+*.log
+/*.out
+/*.aux
+/*.bbl
+/*.bcf
+/*.blg
+/*.fdb_latexmk
+/*.fls
