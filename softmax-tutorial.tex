@@ -1,0 +1,282 @@
+\documentclass[fleqn,reqno,11pt]{article}
+\usepackage{a4wide}
+
+\usepackage{myarticlestyledefault}
+
+\title{Softmax: {A} tutorial}
+\author{Michael Franke \& Judith Degen}
+\date{started: March 29 2022, this version compiled on: \today}
+
+\begin{document}
+\maketitle
+
+
+\section{Motivation}
+\label{sec:motivation-1}
+
+\begin{itemize}
+  \item softmax is a ubiquitous helper function, frequently used as a probabilistic link function for unordered categorical data
+  \item the softmax function occurs frequently (in the cognitive sciences), e.g.:
+  \begin{itemize}
+    \item neural networks
+    \item multinomial regression
+    \item in probabilistic statistical / cognitive models for discrete choice
+  \end{itemize}
+  \item the goal of this tutorial is to describe the softmax function in increasing level of mathematical and conceptual detail, so as to enable better understanding of the models in which it occurs
+  \item different types of models require different depth of understanding of the softmax function:
+  \begin{itemize}
+    \item for general-purpose models like ANNs and regression it suffices to understand what softmax does in terms of its input-output behavior, possibly with a bit of understanding of its key properties (Sections~\ref{sec:softmax-io}--\ref{sec:properties-softmax})
+    \item for theory-driven models like probabilistic cognitive models, whose internal parameters aspire to be meaningfully interpretable, it may be useful to additionally understand how the softmax function can be motivated conceptually and mathematically derived; we look at two such motivations and derivations here:
+    \begin{itemize}
+      \item softmax as a stochastic choice function (Section~\ref{sec:softm-as-stoch})
+      \item softmax as a maximum entropy distribution (Section~\ref{sec:softmax-as-maximum})
+    \end{itemize}
+  \end{itemize}
+  \item a secondary goal behind increasing understanding of the softmax function is to provide better interpretability of its key parameter, the \emph{optimality parameter}; this is very important for interpretability in at least two domains:
+  \begin{itemize}
+    \item for interpreting model fits (Bayesian or point-estimates, like MLE), which yield numerical estimates for the softmax function's optimality parameter
+    \item for enabling the interpretation and specification of reasonable priors in Bayesian modeling
+  \end{itemize}
+\end{itemize}
+
+\section{Softmax basics: definition, notation \& terminology}
+\label{sec:notat--term}
+
+\begin{itemize}
+  \item Let $\myvec{x} = \tuple{x_{1}, \dots, x_{n}}$ be a vector of $n$ unordered \emph{outcome categories}, and $\myvec{s} = \tuple{s_{1}, \dots, s_{n}}$ be a vector of the same length giving us \emph{scores}.
+  \item Outcome categories could be labels (Does this picture show a dog, a cat or a goldfish? Is this text fiction, law, or science?) or actions of an agent (Will John order pizza, pasta or salad?)
+  \item The score $s_{i}$ associated with outcome $x_{i}$ is a real number which we will use to define the probability of $x_{i}$.
+  \begin{itemize}
+    \item The interpretability of the scores depends on the context (model) they occur in.
+    \begin{itemize}
+      \item  For data-driven models, like neural networks or regression models, the meaning of the scores is defined solely by their role in the softmax function itself, i.e., they are defined by which probability distributions they help create via the softmax function.
+      \item For theory-driven cognitive models, the scores can be intinsically meaningful, often derived from other interpretable quantities, e.g., an agent's preferences or dispositions towards different choices, or the accumulated evidence accrued for different interpretations of a given stimulus.
+    \end{itemize}
+  \end{itemize}
+  \item The ``problem'' for which the softmax function provides a solution is: given the the scores $\myvec{s}$ for categories $\myvec{x}$ how likely is each category? I.e., the softmax function is a mapping:
+  \begin{align*}
+    \text{softmax} \colon \myvec{s} \mapsto \myvec{p}
+  \end{align*}
+  from numerical scores to a probability vector $\myvec{p} = \tuple{p_{1}, \dots, p_{n}}$, where $p_{i}$ describes the probability that category $x_{i}$ obtains (given the scores $s_{j}$ for all $j$).
+  \begin{itemize}
+    \item \mf{Explain what ``problem'' and ``solution'' mean here for the two types of models we consider. Link function.}
+  \end{itemize}
+  \item The definition of the softmax function is:\footnote{We write $\expo s_{i}$ to mean $e^{s_{i}}$, using the same bracketing and association rules as for the inverse $\log$ operator.}
+  \begin{align*}
+    \text{SoftMax}(\myvec{s} ; \alpha) = \myvec{p}, \ \ \ \text{with: } p_{i} = \frac{\expo{(\alpha \ s_{i})}}{\sum_{j} \expo{(\alpha \ s_{j})}}
+  \end{align*}
+  Authors often use simpler notation, omitting the normalizing constant $Z = \sum_{j} \expo{(\alpha \ s_{j})}$ and would just write:
+  \begin{align*}
+    p_{i} \propto \expo{(\alpha \ s_{i})}
+  \end{align*}
+  \item The softmax function has an \emph{optimality parameter} $\alpha$, which is sometimes omitted, i.e., implicitly set to 1.
+\end{itemize}
+
+\section{Softmax by I/O}
+\label{sec:softmax-io}
+
+\section{Properties of softmax}
+\label{sec:properties-softmax}
+
+\begin{itemize}
+  \item For all $i$, if all $s_{j}$ are finite, $p_{i} >0$.
+  \begin{itemize}
+    \item \mf{todo: insert proof}
+  \end{itemize}
+  \item Softmax is invariant under addition: if $a \in \mathds{R}$ is a constant, then $\text{SoftMax}(\myvec{s} ; \alpha) = \text{SoftMax}(\myvec{s} + a; \alpha)$.
+  \begin{itemize}
+    \item \mf{todo: insert proof}
+  \end{itemize}
+  \item Softmax is not invariant under multiplication: if $a \in \mathds{R} > 0$ is a constant, then $\text{SoftMax}(\myvec{s} ; \alpha) = \text{SoftMax}(a\ \myvec{s}; \alpha)$ only if $s_{i} = s_{j}$ for all $j$ and $j$.
+  \begin{itemize}
+    \item \mf{todo: insert proof}
+  \end{itemize}
+  \item Multiplicative factors can be recovered by different optimality parameters: if $a \in \mathds{R} > 0$ is a constant, then $\text{SoftMax}(\myvec{s} ; \alpha) = \text{SoftMax}(a\ \myvec{s}; \nicefrac{\alpha}{a})$.
+  \begin{itemize}
+    \item \mf{todo: insert proof (trivial)}
+  \end{itemize}
+    \item Softmax reduces to the logistic function when $n=2$.
+  \begin{itemize}
+    \item \mf{todo: insert proof}
+  \end{itemize}
+  \item What really matters to softmax are differences between scores. In particular, odds ratios $\nicefrac{p_{i}}{p_{j}}$ are just a function of score differences $s_{i} - s_{j}$, namely: $\nicefrac{p_{i}}{p_{j}} = \expo{(\alpha \ (s_{i} - s_{j}))}$.
+  \begin{align*}
+    \frac{p_{i}}{p_{j}}
+    = \frac{\expo(\alpha \ s_{i})}{\sum_{k} \expo(\alpha s_{k})} \ \frac{\sum_{k} \expo(\alpha s_{k})}{\expo(\alpha \ s_{j})}
+    =  \frac{\expo(\alpha \ s_{i})}{ \expo(\alpha \ s_{j})}
+    = \expo(\alpha \ s_{i} - \alpha \ s_{j})
+    =  \expo(\alpha \ (s_{i} - \ s_{j}) )
+  \end{align*}
+\end{itemize}
+
+\section{Softmax as stochastic choice function}
+\label{sec:softm-as-stoch}
+
+In this section, we derive the softmax function as the probability entailed by a stochastic choice mechanism, in which the choice of $x_{i}$ is optimal (an $x_{i}$ with the highest score is chosen), but in which the scores themselves are ``wiggled'' each time a decision has to be made \citep{Luce1959:Individual-Choi,Train2009:Discrete-Choice}.
+Given specific choices about the probability of the ``wiggles,'' we can derive the softmax function as the expected choice frequencies.
+\mf{Include a visualization of this.}
+
+Let's think of $x_1, \dots, x_n$ as an agent's available choice options (actions), each with a score $s_1, \dots, s_n$ which tells us how good each choice is.
+The agent in question could be a human decision maker (making perceptual or economic decisions), but it could also be an abstract system ``choosing'' a category based on the objective to maximize the score.
+An optimal (or rational) agent would always only choose $x_{i}$ if $s_{i} = \max_{j} s_{j}$, so an optimal agent would maximize the score perfectly.
+But let us now assume that there is room for imperfection.
+Mistakes happen, but not just any mistake is equally likely.
+It is more likely to choose a suboptimal option whose score is almost maximal than to choose a suboptimal option which is far worse.
+Essentially, this leads to the desire to formulate \emph{probabilistic choice rules} such that the probability $p_{i}$ of choosing $x_i$ is higher the higher its relative score is
+\citep{Luce1959:Individual-Choi,Train2009:Discrete-Choice}.
+
+The softmax choice rule can be derived as the probability $p_{i}$ that an agent chooses $x_i$ as
+the best choice from a noise-perturbed representation $s'_1, \dots, s'_n$ of the scores, where $s_j = s_j + \\epsilon_j$ and all $\epsilon_j$ are independently and identically distributed random noise perturbations of the actual scores of the available options.
+In other words, each time the agent chooses from $x_1, \dots, x_n$, they choose $x \in \arg \max_j s_j + \epsilon_j$ for a vector of errors $\myvec{\epsilon} = \tuple{\epsilon_1, \dots, \epsilon_j}$ which are sampled anew every time a choice is made (each choice a different set of ``wiggles'').
+The errors in $\myvec{\epsilon}$ can be thought of as random errors in the computation of the scores.
+(We could say that the agent makes rational choices given a momentarily and subjectively distorted representation of actual scores.)
+The probability that an agent who maximizes (noise-perturbed) utility chooses action $a_i$ is therefore:
+\begin{align}
+  \label{eq:GeneralProb}
+  p_{i} \ \  = \ \ P( \forall j \neq i \mycolon s_i + \epsilon_i > s_j + \epsilon_j ) \ \  = \ \
+   P( \forall j \neq i \mycolon \epsilon_j < \epsilon_i + s_i - s_j)\,.
+\end{align}
+
+To derive the softmax function, we must make specific assumptions about the probability distribution from which each $\epsilon$ is sampled.
+Concretely, we assume that the error terms $\epsilon_j$ come from a \textbf{Gumbel distribution} with location $\mu = 0$ and arbitrary scale parameter $\beta > 0$.
+In general, the Gumbel distribution has a cumulative density function
+\begin{align*}
+  F(\epsilon ; \mu , \beta) = e^{- e^{- \frac{\epsilon-\mu}{\beta} } }
+\end{align*}
+and a probability density function
+\begin{align*}
+  f(\epsilon ; \mu , \beta) = \frac{1}{\beta} e^{ - \frac{\epsilon-\mu}{\beta}  } e^{- e^{- \frac{\epsilon-\mu}{\beta} } }\,.
+\end{align*}
+\mf{Why different notation of exponential function?}
+The variance of this distribution is a function of the scale parameter: $\frac{\pi^2}{6}\beta^2$.
+This is important for interpreting the optimality parameter $\alpha$ of the softmax function, because we will set $\alpha = \frac{1}{\beta}$ to obtain:
+\begin{align*}
+  F(\epsilon ; \mu = 0, \beta = \nicefrac{1}{\alpha}) = e^{- e^{- \alpha \epsilon } }
+\end{align*}
+and a probability density function
+\begin{align*}
+  f(\epsilon ; \mu = 0 , \beta = \nicefrac{1}{\alpha}) = \alpha e^{ - \alpha \epsilon  }
+  e^{- e^{- \alpha \epsilon } }\,.
+\end{align*}
+Figure~\ref{fig:GumbelExamples} gives examples of the latter probability density function for different values of $\alpha$.
+
+\begin{figure}
+  \centering
+
+ \includegraphics[width = 12cm]{02-plots+code/gumbel_examples.pdf}
+
+  \caption{Examples of Gumbel probability density with location $\mu = 0$ and different values
+    for $\beta = \nicefrac{1}{\alpha}$: $y = f(\epsilon ; \mu = 0, \beta = \nicefrac{1}{\alpha})$ as
+    defined in the text. \mf{update plot, use $\epsilon$, not $x$}}
+  \label{fig:GumbelExamples}
+\end{figure}
+
+Given this assumption about the distribution of noise perturbations $\myvec{\epsilon}$, we can spell out the probability $p_{i}$ from (\ref{eq:GeneralProb}) as a function $P(x_{i} ; \alpha)$ of $\alpha$.
+Let's first assume, unrealistically, that we would know the value of $\epsilon_i$.
+From the right-hand side of (\ref{eq:GeneralProb}), $p_{i}$ would then be determined by how likely it
+is to sample a set of $\epsilon_j$-s all of which are below a given threshold $\epsilon_i + s_i - s_j$.
+Since all $\epsilon_j$ are sampled independently, this is the product of the cumulative densities for all $\epsilon_j$ being smaller than the threshold $\epsilon_i + s_i - s_j$:
+\begin{align*}
+  P(x_i ; \alpha)^{|\epsilon_i} \ \ = \ \ \prod_{j \neq i} F(\epsilon_i + s_i - s_j ; \mu = 0 , \beta =
+  \nicefrac{1}{\alpha}) \ \ = \ \ \prod_{j \neq i} e^{ - e^{ - \alpha
+      (\epsilon_i + s_i - s _j)  } }\,.
+\end{align*}
+
+But, of couse, we do not know the value of $\epsilon_i$. We only know its distribution, so that:
+\begin{align*}
+  P(x_i ; \alpha) & = \int f(\epsilon_i ; \mu = 0 , \beta = \nicefrac{1}{\alpha}) \prod_{j \neq i}
+  e^{ - e^{ - \alpha (\epsilon_i + s_i - s_j)  } } \ d\epsilon_i \\
+  & = \int \alpha e^{ - \alpha \epsilon_i } e^{- e^{- \alpha \epsilon_i } } \prod_{j \neq i}
+  e^{ - e^{ - \alpha (\epsilon_i + s_i - s_j)  } } \ d\epsilon_i \\
+  & = \alpha \int e^{ - \alpha \epsilon_i } \prod_{j}
+  e^{ - e^{ - \alpha (\epsilon_i + s_i - s_j)  } } \ d\epsilon_i \\
+  & = \alpha \int e^{ - \alpha \epsilon_i }
+  \expo \left ( - \sum_{j}  e^{ - \alpha (\epsilon_i + s_i - s_j)  } \right ) \ d\epsilon_i \\
+  & = \alpha \int e^{ - \alpha \epsilon_i }
+  \expo \left ( - e^{- \alpha \epsilon_i} \sum_{j}  e^{ - \alpha (s_i - s_j)  } \right ) \ d\epsilon_i \\
+  & = \alpha \int e^{ - \alpha \epsilon_i } \expo \left ( - c e^{- \alpha \epsilon_i} \right ) \ d\epsilon_i &
+  \hfill \textcolor{gray}{\text{with } c = \sum_{j} e^{ - \alpha (s_i - s_j) }} \\ & = \frac{\expo(- c
+    e^{-\alpha \epsilon_i})}{c} \ \bigg|_{-\infty}^{\infty} &  \\
+  & = \lim_{\epsilon_i \rightarrow \infty} \frac{\expo(- c e^{-\alpha \epsilon_i})}{c} - \lim_{\epsilon_i \rightarrow -
+    \infty} \frac{\expo(- c e^{-\alpha \epsilon_i})}{c} = \frac{1}{c} - 0 \\
+  &= \frac{1}{\sum_{j} e^{ - \alpha (s_i - s_j) }} = \frac{1}{ e^{- \alpha s_i} \sum_{j} e^{
+      \alpha s_j}} = \frac{\expo(\alpha \ s_i)}{ \sum_{j} \expo (\alpha\ s_j)}\,.
+\end{align*}
+
+
+\section{Softmax as maximum-entropy distribution}
+\label{sec:softmax-as-maximum}
+
+\subsection{Informal characterization}
+\label{sec:inform-char}
+
+\subsection{Formal derivation}
+\label{sec:formal-derivation}
+
+\section{Interpretation of the optimality parameter}
+\label{sec:interpr-optim-param}
+
+\begin{itemize}
+\item This section seeks to answer three questions about the optimality parameter $\alpha$:
+  \begin{enumerate}
+    \item What does a fixed value of $\alpha$ mean? (E.g., as returned by a point-estimate after parameter inference.) (Section~\ref{sec:optim-param-as})
+    \item How do predictions differ between two values $\alpha_{1}$ and $\alpha_{2}$, all else equal? Concretely, what does it mean to increase a value $\alpha_{1}$ by a factor $f$, so that $\alpha_{2} = f \ \alpha_{1}$? (Section~\ref{sec:interpr-diff-betw})
+    \item What does all of this entail for a reasonable choice of prior probability for optimality parameters in Bayesian data analysis? (Section~\ref{sec:impl-prob-model})
+  \end{enumerate}
+\end{itemize}
+
+\subsection{Optimality parameter as log-odds ratio for unit score difference}
+\label{sec:optim-param-as}
+
+\begin{itemize}
+  \item We saw in Section~\ref{sec:properties-softmax} that what really matters for softmax probabilities are \emph{differences} between scores.
+  \begin{align*}
+    \frac{p_{i}}{p_{j}} =  \expo(\alpha \ (s_{i} - \ s_{j}) )
+  \end{align*}
+  \item This provides an intuitive interpretation of the optimality parameter $\alpha$ in terms of the log-odds for a unit score difference.
+  \begin{itemize}
+    \item We have a unit score difference whenever $s_{i} - s_{j} = 1$.
+    \item If that's the case, then:
+    \begin{align*}
+    \frac{p_{i}}{p_{j}} =  \expo\left(\alpha \ (s_{i} - \ s_{j}) \right) = \expo \alpha
+  \end{align*}
+    \item Which means that $\alpha$ gives the log-odds for a unit score difference:
+    \begin{align*}
+      \alpha = \log \frac{p_{i}}{p_{j}}
+    \end{align*}
+    \mf{How best to explain what this means intuitively? Make a picture?}
+  \end{itemize}
+  \item We can use this interpretation of optimality $\alpha$ as log-odds for unit score differences to makes sense of fitted values of $\alpha$. Suppose we find that a maximum likelihood fit yields $\hat{\alpha} = 5$.
+\end{itemize}
+
+\subsection{Interpreting differences between optimality parameters}
+\label{sec:interpr-diff-betw}
+
+\begin{itemize}
+  \item All else equal, how can we intuitively understand the difference between $\text{SoftMax}(\myvec{s}; \alpha)$ and $\text{SoftMax}(\myvec{s}; \alpha')$?
+  \item We look at the factor $f = \frac{\alpha'}{\alpha}$ by which $\alpha'$ differs from $\alpha$ and note that:
+  \begin{align*}
+    \frac{p_{i}}{p_{j}} &   = \expo{\left(\alpha \ (s_{i - s_{j}}) \right)} \\
+    \frac{p'_{i}}{p'_{j}} & = \expo{\left(\alpha' \ (s_{i - s_{j}}) \right)}
+                          =  \expo{\left(f \ \alpha \ (s_{i - s_{j}}) \right)}
+                          =  \left [\expo{\left(\alpha \ (s_{i - s_{j}}) \right)}\right]^{f}
+                        = \left [ \frac{p_{i}}{p_{j}} \right]^{f}
+  \end{align*}
+  \item In words, if the optimality operator increases by a factor $f$, the odds of choosing $x_{i}$ over $x_{j}$ ($s_{i} > s_{j}$ ) increase by the power of $f$.
+\end{itemize}
+
+\subsection{Implications for probabilistic modeling}
+\label{sec:impl-prob-model}
+
+\begin{itemize}
+  \item If we interpret $\alpha$ as the log odds $\log \frac{p_{i}}{p_{j}}$ for a unit difference in scores $s_{i} - s_{j} = 1$, a natural choice of family for a prior on the optimality parameter in Bayesian data analysis is a log-normal distribution (or any other log-something distribution).
+  \item The mean of the log-normal prior distribution would correspond to the modeller's prior assumption about the expected log odds for a unit difference in scores.
+  \item The variance of the log-normal prior distribution should be chosen based on the modeler's uncertainty about the log odds for a unit difference in scores. When choosing the variance, the result that increasing $\alpha$ by a factor of $f$ increases odds by the power $f$ can be used as guidance.
+  \item The picture becomes more complicated, when the scores are not fixed in advance but hinge on other model parameters. In that case, priors should always be chosen ``holistically'' and in the light of the plausibility of the entailed prior predictive functions \mf{insert reference to Bayesian workflow literature}.
+\end{itemize}
+
+
+
+\printbibliography[heading=bibintoc]
+
+\end{document}
